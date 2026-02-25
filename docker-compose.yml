@@ -12,7 +12,8 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data # Store data in the database for dont lost when turn off the computer
+      - ./datasets:/datasets:ro  # Map datasets to run the COPY command on postgres
 
 volumes:
   postgres_data:
