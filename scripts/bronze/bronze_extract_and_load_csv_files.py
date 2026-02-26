@@ -25,12 +25,12 @@ engine = create_engine(db_url)
 
 # 1. Extract data from CSV files
 data_map = {
-    'crm_cust_info': pd.read_csv('../datasets/source_crm/cust_info.csv'),
-    'crm_prd_info': pd.read_csv('../datasets/source_crm/prd_info.csv'),
-    'crm_sales_details': pd.read_csv('../datasets/source_crm/sales_details.csv'),
-    'erp_cust_az12': pd.read_csv('../datasets/source_erp/CUST_AZ12.csv'),
-    'erp_loc_a101': pd.read_csv('../datasets/source_erp/LOC_A101.csv'),
-    'erp_px_cat_g1v2': pd.read_csv('../datasets/source_erp/PX_CAT_G1V2.csv')
+    'crm_cust_info': pd.read_csv('../../datasets/source_crm/cust_info.csv'),
+    'crm_prd_info': pd.read_csv('../../datasets/source_crm/prd_info.csv'),
+    'crm_sales_details': pd.read_csv('../../datasets/source_crm/sales_details.csv'),
+    'erp_cust_az12': pd.read_csv('../../datasets/source_erp/CUST_AZ12.csv'),
+    'erp_loc_a101': pd.read_csv('../../datasets/source_erp/LOC_A101.csv'),
+    'erp_px_cat_g1v2': pd.read_csv('../../datasets/source_erp/PX_CAT_G1V2.csv')
 }
 
 # 2. Load extracted CSV files to database
