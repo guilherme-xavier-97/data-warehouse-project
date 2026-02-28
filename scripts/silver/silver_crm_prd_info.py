@@ -1,19 +1,20 @@
 import pandas as pd
 from sqlalchemy import text
 from database.postgres_connection import database_connection
-from utils.transformation_utils import TransformationUtils as tu
 
-def run_crm_cust_info():
-    table_name = 'crm_cust_info'
+def run_crm_prd_info():
+    table_name = 'crm_prd_info'
     db_connection = database_connection()
 
     df = pd.read_sql(f"SELECT * FROM bronze.{table_name}", db_connection) 
 
     # 1 - Remove nulls
-    df = tu.remove_nulls(df, 'cst_id')
+    df = df.dropna(subset=['cst_id'])
 
     # 2 - Remove whitespaces spaces
-    df = tu.remove_whitespaces(df)
+    text_cols = df.select_dtypes(include=['str', 'object']).columns
+    for col in text_cols:
+        df[col] = df[col].str.strip()
 
     # 3 - Standard Gender and Married names
     gender_map = {'M': 'Male', 'F': 'Female'}
@@ -24,11 +25,14 @@ def run_crm_cust_info():
 
     # 4 - Remove duplicates
     df['cst_create_date'] = pd.to_datetime(df['cst_create_date'])
-    df = tu.remove_duplicates(df, 'cst_id', 'cst_create_date')
+    df = df.sort_values(by=['cst_id', 'cst_create_date'], ascending=[True, False])
+    df = df.drop_duplicates(subset='cst_id', keep='first')
+    
 
     # 5 - TRUNCATE AND INSERT DATA
     with db_connection.begin() as conn:
         conn.execute(text(f"TRUNCATE TABLE silver.{table_name}"))
+        
         df.to_sql(
             name=f'{table_name}',
             con=conn,
@@ -41,6 +45,6 @@ def run_crm_cust_info():
 
 
 if __name__ == "__main__":
-    run_crm_cust_info()
+    run_crm_prd_info()
 
 
