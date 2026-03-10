@@ -8,28 +8,27 @@ def run_crm_prd_info():
 
     df = pd.read_sql(f"SELECT * FROM bronze.{table_name}", db_connection) 
 
-    # 1 - Remove nulls
-    df = df.dropna(subset=['cst_id'])
-
-    # 2 - Remove whitespaces spaces
+    # 1 - Remove whitespaces spaces
     text_cols = df.select_dtypes(include=['str', 'object']).columns
     for col in text_cols:
         df[col] = df[col].str.strip()
 
-    # 3 - Standard Gender and Married names
-    gender_map = {'M': 'Male', 'F': 'Female'}
-    marital_status_map = {'S': 'Single', 'M': 'Married'}
+    # 2 - Standard Product Line 
+    product_line_map = {'M': 'Mountain', 'R': 'Road', 'S': 'Other Sales', 'T': 'Touring'}
+    df['prd_line'] = df['prd_line'].map(product_line_map).fillna('N/A')
 
-    df['cst_gndr'] = df['cst_gndr'].map(gender_map).fillna('N/A')
-    df['cst_marital_status'] = df['cst_marital_status'].map(marital_status_map).fillna('N/A')
+    # 3 - Extract new columns: category id and product key
+    df['cat_id'] = df['prd_key'].str[0:5].str.replace('-','_', regex=False)
+    df['prd_key'] = df['prd_key'].str[6:]
 
-    # 4 - Remove duplicates
-    df['cst_create_date'] = pd.to_datetime(df['cst_create_date'])
-    df = df.sort_values(by=['cst_id', 'cst_create_date'], ascending=[True, False])
-    df = df.drop_duplicates(subset='cst_id', keep='first')
-    
+    # 4 - Change nulls
+    df['prd_cost'] = df['prd_cost'].fillna(0)
 
-    # 5 - TRUNCATE AND INSERT DATA
+    # 5 - Calculate dates dinamically
+    df = df.sort_values(['prd_key', 'prd_start_dt'])
+    df['prd_end_dt'] = df.groupby('prd_key')['prd_start_dt'].shift(-1) - pd.Timedelta(days=1)
+
+    # 6 - TRUNCATE AND INSERT DATA
     with db_connection.begin() as conn:
         conn.execute(text(f"TRUNCATE TABLE silver.{table_name}"))
         
