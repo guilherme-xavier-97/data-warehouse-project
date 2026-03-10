@@ -1,1 +1,2 @@
 # data-warehouse-project
+Half of project scripts was built using Pandas (CRM data) to load and transform data. The ERP data was built by native SQL, so, in the project have only the file with the scripts.
